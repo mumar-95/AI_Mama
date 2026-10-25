@@ -1,1 +1,18 @@
-[]
+[
+    {
+        "role": "user",
+        "content": "hi"
+    },
+    {
+        "role": "assistant",
+        "content": "Hi! Please upload your Informatica PowerCenter XML export, or paste its contents here. I’ll analyze the mapping logic and convert it into a DBT model. If you know the target database (for example, Snowflake, BigQuery, or Redshift), include that too."
+    },
+    {
+        "role": "user",
+        "content": "\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<POWERMART CREATION_DATE=\"10/25/2026 10:00:00\">\n\n  <REPOSITORY NAME=\"DEV_REPOSITORY\">\n    <FOLDER NAME=\"ETL_FOLDER\">\n\n      <SOURCE NAME=\"SRC_CUSTOMER\"\n              DATABASETYPE=\"Oracle\">\n        <SOURCEFIELD NAME=\"CUSTOMER_ID\"\n                     DATATYPE=\"number\"/>\n        <SOURCEFIELD NAME=\"CUSTOMER_NAME\"\n                     DATATYPE=\"varchar\"\n                     LENGTH=\"100\"/>\n        <SOURCEFIELD NAME=\"CITY\"\n                     DATATYPE=\"varchar\"\n                     LENGTH=\"50\"/>\n      </SOURCE>\n\n      <TARGET NAME=\"TGT_CUSTOMER\"\n              DATABASETYPE=\"Oracle\">\n        <TARGETFIELD NAME=\"CUSTOMER_ID\"\n                     DATATYPE=\"number\"/>\n        <TARGETFIELD NAME=\"CUSTOMER_NAME\"\n                     DATATYPE=\"varchar\"\n                     LENGTH=\"100\"/>\n        <TARGETFIELD NAME=\"CITY\"\n                     DATATYPE=\"varchar\"\n                     LENGTH=\"50\"/>\n      </TARGET>\n\n      <MAPPING NAME=\"m_customer_direct_load\">\n\n        <INSTANCE NAME=\"SRC_CUSTOMER\"\n                  TRANSFORMATION_NAME=\"SRC_CUSTOMER\"\n                  TRANSFORMATION_TYPE=\"Source Definition\"/>\n\n        <INSTANCE NAME=\"TGT_CUSTOMER\"\n                  TRANSFORMATION_NAME=\"TGT_CUSTOMER\"\n                  TRANSFORMATION_TYPE=\"Target Definition\"/>\n\n        <CONNECTOR FROMINSTANCE=\"SRC_CUSTOMER\"\n                   FROMFIELD=\"CUSTOMER_ID\"\n                   TOINSTANCE=\"TGT_CUSTOMER\"\n                   TOFIELD=\"CUSTOMER_ID\"/>\n\n        <CONNECTOR FROMINSTANCE=\"SRC_CUSTOMER\"\n                   FROMFIELD=\"CUSTOMER_NAME\"\n                   TOINSTANCE=\"TGT_CUSTOMER\"\n                   TOFIELD=\"CUSTOMER_NAME\"/>\n\n        <CONNECTOR FROMINSTANCE=\"SRC_CUSTOMER\"\n                   FROMFIELD=\"CITY\"\n                   TOINSTANCE=\"TGT_CUSTOMER\"\n                   TOFIELD=\"CITY\"/>\n\n      </MAPPING>\n\n    </FOLDER>\n  </REPOSITORY>\n\n</POWERMART>"
+    },
+    {
+        "role": "assistant",
+        "content": "## Here is your DBT model\n\nThe mapping is a direct pass-through: all three source columns are connected to target columns with the same names. No filters, expressions, or other transformations are defined.\n\n**`models/customer.sql`**\n```sql\nselect\n    CUSTOMER_ID,\n    CUSTOMER_NAME,\n    CITY\nfrom {{ source('raw', 'SRC_CUSTOMER') }}\n```\n\nAdd a source definition so DBT can resolve the input table. Replace `YOUR_SOURCE_SCHEMA` with the Oracle schema containing `SRC_CUSTOMER`.\n\n**`models/sources.yml`**\n```yaml\nversion: 2\n\nsources:\n  - name: raw\n    schema: YOUR_SOURCE_SCHEMA\n    tables:\n      - name: SRC_CUSTOMER\n```\n\nThe XML doesn’t specify the source schema, so `YOUR_SOURCE_SCHEMA` is a placeholder."
+    }
+]
